@@ -22,6 +22,12 @@ item_dict = {
     "Candel holder": 4,
     "Mug": 5,
 }
+size_dict = {
+    "Small": 30,
+    "Medium": 60,
+    "Big": 90,
+}
+
 ITEM, IMG, ZIP = range(3)
 counter = 1
 choice_item = 3
@@ -55,7 +61,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 async def item(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Stores the selected item and asks for a img."""
-    global choice_item    
     user = update.message.from_user
     user_choice = update.message.text  # Получаем текст выбранного пользователем элемента
     choice_item = item_dict.get(user_choice)  # Получаем соответствующее числовое значение из словаря
@@ -163,7 +168,9 @@ def main() -> None:
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler("start", start), MessageHandler(filters.PHOTO, handle_photo)],
         states={
-            ITEM: [MessageHandler(filters.Regex("^(Table top|Christmas ball|Transparent eggs|Candel holder|Mug)$"), item)],
+            ITEM: [MessageHandler(filters.Regex("^(Table top|Christmas ball|Transparent eggs|Candel holder|Mug)$"), item)]
+            SIZE: [MessageHandler(filters.Redex("^(Big|Medium|Small)$), size],
+            STAND: [MessageHandler(filters.Redex("^(Thick|Normal|Thin)$), stand],                                    
             IMG: [MessageHandler(filters.PHOTO, ask_photo),
                   MessageHandler(filters.ALL, not_image)],
             },            
