@@ -64,23 +64,29 @@ async def item(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     user = update.message.from_user
     user_choice = update.message.text  # Получаем текст выбранного пользователем элемента
     choice_item = item_dict.get(user_choice)  # Получаем соответствующее числовое значение из словаря
-
     logger.info("Item of %s: %s", user.first_name, update.message.text)
     await update.message.reply_text(
-        "I see! Please send me a image. Images with a dark background are better",
+        "I see! Please enter the size of the model in mm.",
         reply_markup=ReplyKeyboardRemove(),
     )
 
-    return IMG
-
-async def not_image(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    await update.message.reply_text("Please send me the image as a 'Photo', not as a 'File'")
-    
-    return IMG
+    return SIZE
 
 async def ask_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     a = choice_item
     return await image(update, context, choice_item=a)
+async def handle_size
+
+    return STAND
+
+async def handle_stand
+    
+
+    await update.message.reply_text(
+        "I see! Please send me a image. Images with a dark background are better",
+        reply_markup=ReplyKeyboardRemove(),
+    )
+    return IMG
 
 async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return await image(update, context, choice_item=1)
@@ -118,6 +124,11 @@ async def image(update: Update, context: ContextTypes.DEFAULT_TYPE, choice_item)
     counter += 1
     return ConversationHandler.END
 
+async def not_image(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    await update.message.reply_text("Please send me the image as a 'Photo', not as a 'File'")
+    
+    return IMG
+    
 async def send_instructions(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     instructions = """
     *How to Use the STL Creation Bot* 🤖
@@ -153,6 +164,9 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE):
         raise context.error
     except Exception as e:
         logger.error(f"Произошла ошибка: {e}")
+        await update.message.reply_text(
+        "An error has occurred. Try again."
+    )
 
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Cancels and ends the conversation."""
@@ -167,13 +181,14 @@ def main() -> None:
     application = Application.builder().token("6861103323:AAF7_2Jo4tw6GTMn8_BN0DmYOzsfkwZGds8").build()
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler("start", start), MessageHandler(filters.PHOTO, handle_photo)],
-        states={
-            ITEM: [MessageHandler(filters.Regex("^(Table top|Christmas ball|Transparent eggs|Candel holder|Mug)$"), item)]
-            SIZE: [MessageHandler(filters.Redex("^(Big|Medium|Small)$), size],
-            STAND: [MessageHandler(filters.Redex("^(Thick|Normal|Thin)$), stand],                                    
-            IMG: [MessageHandler(filters.PHOTO, ask_photo),
-                  MessageHandler(filters.ALL, not_image)],
-            },            
+states = {
+    ITEM: [MessageHandler(filters.Regex("^(Table top|Christmas ball|Transparent eggs|Candle holder|Mug)$"), handle_item)],
+    SIZE: [MessageHandler(filters.Regex("^\d{1,3}$"), handle_size)],  # Числа от 0 до 999 для размера
+    STAND: [MessageHandler(filters.Regex("^\d{1,3}$"), handle_stand)], # Числа от 0 до 999 для основания                                    
+    IMG: [MessageHandler(filters.PHOTO, handle_photo),
+          MessageHandler(filters.ALL, handle_not_image)],
+}
+
             fallbacks=[CommandHandler("cancel", cancel)],
     )
     application.add_handler(conv_handler)
