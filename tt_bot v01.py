@@ -22,11 +22,6 @@ item_dict = {
     "Candel holder": 4,
     "Mug": 5,
 }
-size_dict = {
-    "Small": 30,
-    "Medium": 60,
-    "Big": 90,
-}
 
 ITEM, IMG, ZIP = range(3)
 counter = 1
@@ -72,21 +67,30 @@ async def item(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
     return SIZE
 
-async def ask_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    a = choice_item
-    return await image(update, context, choice_item=a)
-async def handle_size
+async def handle_size(update: Update, context: CallbackContext) -> int:
+    user = update.message.from_user
+    size = update.message.text
+    logger.info(f"Size of {context.user_data['item']} for {user.first_name}: {size}")
+
+    # Сохранение размера и переход к следующему состоянию
+    context.user_data['size'] = size
+    await update.message.reply_text(f"Got it! The size of your {context.user_data['item']} is {size}. Now, please send me the stand size.")
 
     return STAND
 
-async def handle_stand
-    
+async def handle_stand(update: Update, context: CallbackContext) -> int:
+    user = update.message.from_user
+    stand_size = update.message.text
+    logger.info(f"Stand size for {context.user_data['item']} of {user.first_name}: {stand_size}")
 
-    await update.message.reply_text(
-        "I see! Please send me a image. Images with a dark background are better",
-        reply_markup=ReplyKeyboardRemove(),
-    )
+    context.user_data['stand'] = stand_size
+    await update.message.reply_text(f"Great! The stand size for your {context.user_data['item']} is {stand_size}.")
     return IMG
+    
+async def ask_photo(update: Update, context: CallbackContext) -> int:
+    choice_item = context.user_data.get('choice_item', 'DefaultItem') 
+    return await image(update, context, choice_item=choice_item)
+
 
 async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return await image(update, context, choice_item=1)
@@ -181,16 +185,15 @@ def main() -> None:
     application = Application.builder().token("6861103323:AAF7_2Jo4tw6GTMn8_BN0DmYOzsfkwZGds8").build()
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler("start", start), MessageHandler(filters.PHOTO, handle_photo)],
-states = {
-    ITEM: [MessageHandler(filters.Regex("^(Table top|Christmas ball|Transparent eggs|Candle holder|Mug)$"), handle_item)],
-    SIZE: [MessageHandler(filters.Regex("^\d{1,3}$"), handle_size)],  # Числа от 0 до 999 для размера
-    STAND: [MessageHandler(filters.Regex("^\d{1,3}$"), handle_stand)], # Числа от 0 до 999 для основания                                    
-    IMG: [MessageHandler(filters.PHOTO, handle_photo),
-          MessageHandler(filters.ALL, handle_not_image)],
-}
-
-            fallbacks=[CommandHandler("cancel", cancel)],
-    )
+    states = {
+        ITEM: [MessageHandler(filters.Regex("^(Table top|Christmas ball|Transparent eggs|Candle holder|Mug)$"), handle_item)],
+        SIZE: [MessageHandler(filters.Regex("^\d{1,3}$"), handle_size)],  # Числа от 0 до 999 для размера
+        STAND: [MessageHandler(filters.Regex("^\d{1,3}$"), handle_stand)], # Числа от 0 до 999 для основания                                    
+        IMG: [MessageHandler(filters.PHOTO, handle_photo),
+              MessageHandler(filters.ALL, handle_not_image)],
+    },
+    fallbacks=[CommandHandler("cancel", cancel)],)
+    
     application.add_handler(conv_handler)
     application.add_error_handler(error_handler)
     application.add_handler(CommandHandler("help", send_instructions))
